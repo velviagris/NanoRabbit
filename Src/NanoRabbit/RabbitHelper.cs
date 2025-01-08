@@ -15,7 +15,7 @@ namespace NanoRabbit
     /// </summary>
     public class RabbitHelper : IRabbitHelper, IDisposable
     {
-        private readonly IConnection _connection;
+        private IConnection _connection;
         private readonly ConcurrentDictionary<string, IModel> _channels;
         private readonly Dictionary<string, EventingBasicConsumer> _consumers;
         private readonly Dictionary<string, AsyncEventingBasicConsumer> _asyncConsumers;
@@ -64,17 +64,30 @@ namespace NanoRabbit
 
             if (_rabbitConfig.UseAsyncConsumer) factory.DispatchConsumersAsync = true;
 
-            _connection = factory.CreateConnection();
+            _pipeline = new ResiliencePipelineBuilder()
+                .AddRetry(new RetryStrategyOptions { MaxRetryAttempts = 3 }) // Add retry using the default options
+                .AddTimeout(TimeSpan.FromSeconds(10)) // Add 10 seconds timeout
+                .Build(); // Builds the resilience pipeline
+            
+            _pipeline.Execute(token =>
+            {
+                try
+                {
+                    _connection = factory.CreateConnection();
+                }
+                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException e)
+                {
+                    _logger?.LogError($"RabbitMQ Unreachable, reconnecting...");
+                    throw;
+                }
+            });
+            
             _channels = new ConcurrentDictionary<string, IModel>();
 
             _consumers = new Dictionary<string, EventingBasicConsumer>();
             _asyncConsumers = new Dictionary<string, AsyncEventingBasicConsumer>();
             _logger = logger;
 
-            _pipeline = new ResiliencePipelineBuilder()
-                .AddRetry(new RetryStrategyOptions { MaxRetryAttempts = 3 }) // Add retry using the default options
-                .AddTimeout(TimeSpan.FromSeconds(10)) // Add 10 seconds timeout
-                .Build(); // Builds the resilience pipeline
         }
 
         #region basic functions
