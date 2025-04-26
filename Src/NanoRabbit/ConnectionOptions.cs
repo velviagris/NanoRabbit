@@ -1,6 +1,6 @@
 ﻿using System.Security.Authentication;
 
-namespace NanoRabbit.Connection;
+namespace NanoRabbit;
 
 
 /// <summary>
@@ -63,6 +63,11 @@ public class ConsumerOptions
     /// Customize consumer name
     /// </summary>
     public string ConsumerName { get; set; } = null!;
+    
+    /// <summary>
+    /// Customize handler name
+    /// </summary>
+    public string HandlerIdentifier { get; set; } = null!;
 
     /// <summary>
     /// Subscribe queue name
@@ -83,6 +88,22 @@ public class ConsumerOptions
     /// BasicQos prefetchCount, default: 0
     /// </summary>
     public ushort PrefetchCount { get; set; } = 0;
+    
+    /// <summary>
+    /// Set several Consumers, defaults: 1s
+    /// </summary>
+    public int ConsumerCount { get; set; } = 1;
+
+    #region Additional options (declare if need)
+
+    public bool DeclareQueue { get; set; } = false;
+    public bool QueueDurable { get; set; } = true;
+    public bool QueueExclusive { get; set; } = false;
+    public bool QueueAutoDelete { get; set; } = false;
+    public IDictionary<string, object>? QueueArguments { get; set; }
+    public bool AutoAck { get; set; } = false;
+
+    #endregion 
 }
 
 /// <summary>

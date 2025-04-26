@@ -1,4 +1,4 @@
-﻿namespace NanoRabbit.Connection;
+﻿namespace NanoRabbit;
 
 /// <summary>
 /// RabbitConfiguration Builder.
@@ -75,7 +75,7 @@ public class RabbitConfigurationBuilder
     }
 
     /// <summary>
-    /// Set to true will enable a asynchronous consumer dispatcher. Defaults to false.
+    /// Set to true will enable an asynchronous consumer dispatcher. Defaults to false.
     /// </summary>
     /// <param name="useAsyncConsumer"></param>
     public RabbitConfigurationBuilder UseAsyncConsumer(bool useAsyncConsumer)

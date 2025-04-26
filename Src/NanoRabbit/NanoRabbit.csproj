@@ -18,20 +18,15 @@
     <IncludeSymbols>True</IncludeSymbols>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageIcon>icon.png</PackageIcon>
-    <Version>0.2.3</Version>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <Version>0.2.4</Version>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Helper\**" />
-    <EmbeddedResource Remove="Helper\**" />
-    <None Remove="Helper\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\Img\icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
+      <Link>icon.png</Link>
     </None>
     <None Include="..\..\LICENSE.txt">
       <Pack>True</Pack>

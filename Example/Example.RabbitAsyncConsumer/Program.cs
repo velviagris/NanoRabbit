@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using System.Text;
+using Microsoft.Extensions.Hosting;
 using NanoRabbit;
-using NanoRabbit.Connection;
 using NanoRabbit.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder();
@@ -24,35 +24,42 @@ builder.Services.AddRabbitHelper(builder =>
         {
             consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
+            consumer.ConsumerCount = 3;
         })
         .AddConsumerOption(consumer =>
         {
             consumer.ConsumerName = "BarConsumer";
             consumer.QueueName = "bar-queue";
+            consumer.ConsumerCount = 2;
         });
 })
-.AddAsyncRabbitConsumer<FooQueueHandler>("FooConsumer", consumers: 3)
-.AddAsyncRabbitConsumer<BarQueueHandler>("BarConsumer", consumers: 2);
+.AddRabbitAsyncHandler<FooQueueHandler>()
+.AddRabbitAsyncHandler<BarQueueHandler>()
+.AddRabbitConsumerService();
 
 var host = builder.Build();
 await host.RunAsync();
 
-public class FooQueueHandler : DefaultAsyncMessageHandler
+public class FooQueueHandler : IAsyncMessageHandler
 {
-    public override async Task HandleMessageAsync(string message)
+    public async Task<bool> HandleMessageAsync(byte[] messageBody, string? routingKey = null, string? correlationId = null)
     {
+        var message = Encoding.UTF8.GetString(messageBody);
         Console.WriteLine($"[x] Received from foo-queue: {message}");
         await Task.Delay(1000);
         Console.WriteLine("[x] Done");
+        return true;
     }
 }
 
-public class BarQueueHandler : DefaultAsyncMessageHandler
+public class BarQueueHandler : IAsyncMessageHandler
 {
-    public override async Task HandleMessageAsync(string message)
+    public async Task<bool> HandleMessageAsync(byte[] messageBody, string? routingKey = null, string? correlationId = null)
     {
+        var message = Encoding.UTF8.GetString(messageBody);
         Console.WriteLine($"[x] Received from bar-queue: {message}");
         await Task.Delay(500);
         Console.WriteLine("[x] Done");
+        return true;
     }
 }

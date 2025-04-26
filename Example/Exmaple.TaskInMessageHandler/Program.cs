@@ -2,9 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NanoRabbit;
-using NanoRabbit.Connection;
 using NanoRabbit.DependencyInjection;
 using System.Collections.Concurrent;
+using System.Text;
 
 var builder = Host.CreateApplicationBuilder();
 
@@ -45,13 +45,13 @@ builder.Services.AddKeyedRabbitHelper("default", builder =>
             consumer.QueueName = "foo-queue";
         });
 })
-.AddKeyedAsyncRabbitConsumer<FooQueueHandler>("default", "FooConsumer", consumers: 1);
+.AddKeyedRabbitAsyncHandler<FooQueueHandler>("default");
 
 
 var host = builder.Build();
 await host.RunAsync();
 
-public class FooQueueHandler : DefaultAsyncMessageHandler
+public class FooQueueHandler : IAsyncMessageHandler
 {
     private readonly IRedisConnectionFactory _connFactory;
     private readonly IRabbitHelper _rabbitHelper;
@@ -67,14 +67,16 @@ public class FooQueueHandler : DefaultAsyncMessageHandler
 
         Task.Run(() => ProcessQueueAsync());
     }
-
-    public override async Task HandleMessageAsync(string message)
+    
+    public async Task<bool> HandleMessageAsync(byte[] messageBody, string? routingKey = null, string? correlationId = null)
     {
+        var message = Encoding.UTF8.GetString(messageBody);
         Console.WriteLine($"[x] Received from foo-queue: {message}");
 
         _queue.Enqueue(message);
 
         Console.WriteLine($"Message {message} enqueued.");
+        return true;
     }
 
     private async Task ProcessQueueAsync()

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using NanoRabbit;
-using NanoRabbit.Connection;
 
 namespace Test.Logger
 {

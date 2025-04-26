@@ -1,11 +1,67 @@
-﻿using Example.MultiConnections;
+﻿using System.Text;
+using Example.MultiConnections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NanoRabbit;
-using NanoRabbit.Connection;
 using NanoRabbit.DependencyInjection;
+using NanoRabbit.Service;
 
 var builder = Host.CreateApplicationBuilder();
+
+
+
+var fooConfig = new RabbitConfiguration
+{
+    HostName = "localhost",
+    Port = 5672,
+    UserName = "admin",
+    Password = "admin",
+    VirtualHost = "/",
+    UseAsyncConsumer = false,
+    ConnectionName = "FooConnection",
+    Consumers = new List<ConsumerOptions>()
+    {
+        new ConsumerOptions
+        {
+            ConsumerName = "FooConsumer",
+            HandlerIdentifier = "FooQueueHandler",
+            QueueName = "foo-queue",
+            AutomaticRecoveryEnabled = true,
+            PrefetchSize = 0,
+            PrefetchCount = 10,
+            AutoAck = false,
+            ConsumerCount = 2
+        }
+    }
+};
+
+var barConfig = new RabbitConfiguration
+{
+    HostName = "localhost",
+    Port = 5672,
+    UserName = "admin",
+    Password = "admin",
+    VirtualHost = "/",
+    UseAsyncConsumer = false,
+    ConnectionName = "BarConnection",
+    Consumers = new List<ConsumerOptions>()
+    {
+        new ConsumerOptions
+        {
+            ConsumerName = "BarConsumer",
+            HandlerIdentifier = "BarQueueHandler",
+            QueueName = "bar-queue",
+            AutomaticRecoveryEnabled = true,
+            PrefetchSize = 0,
+            PrefetchCount = 10,
+            AutoAck = false,
+        }
+    }
+};
+
+// builder.Services.AddKeyedScoped<IMessageHandler, FooQueueHandler>(nameof(FooQueueHandler));
+// builder.Services.AddKeyedScoped<IMessageHandler, BarQueueHandler>("BarQueueHandler");
 
 builder.Services.AddKeyedRabbitHelper("DefaultRabbitHelper", builder =>
 {
@@ -14,6 +70,7 @@ builder.Services.AddKeyedRabbitHelper("DefaultRabbitHelper", builder =>
         .SetVirtualHost("/")
         .SetUserName("admin")
         .SetPassword("admin")
+        .SetConnectionName("FooConnection")
         .AddProducerOption(producer =>
         {
             producer.ProducerName = "FooProducer";
@@ -23,10 +80,11 @@ builder.Services.AddKeyedRabbitHelper("DefaultRabbitHelper", builder =>
         })
         .AddConsumerOption(consumer =>
         {
-            consumer.ConsumerName = "DefaultFooConsumer";
+            consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
+            consumer.HandlerIdentifier = "FooQueueHandler";
         });
-}).AddKeyedRabbitConsumer<DefaultMessageHandler>("DefaultRabbitHelper", "DefaultFooConsumer");
+});
 
 builder.Services.AddKeyedRabbitHelper("TestRabbitHelper", builder =>
 {
@@ -44,10 +102,17 @@ builder.Services.AddKeyedRabbitHelper("TestRabbitHelper", builder =>
     })
     .AddConsumerOption(consumer =>
     {
-        consumer.ConsumerName = "TestFooConsumer";
+        consumer.ConsumerName = "BarConsumer";
         consumer.QueueName = "foo-queue";
+        consumer.HandlerIdentifier = "BarQueueHandler";
     });
-}).AddKeyedRabbitConsumer<DefaultMessageHandler>("TestRabbitHelper", "TestFooConsumer");
+});
+
+builder.Services.AddKeyedRabbitHandler<FooQueueHandler>(nameof(FooQueueHandler));
+builder.Services.AddKeyedRabbitHandler<BarQueueHandler>(nameof(BarQueueHandler));
+
+builder.Services.AddKeyedRabbitConsumerService("DefaultRabbitHelper");
+builder.Services.AddKeyedRabbitConsumerService("TestRabbitHelper");
 
 builder.Services.AddHostedService<DefaultPublishService>();
 builder.Services.AddHostedService<TestPublishService>();
@@ -55,24 +120,28 @@ builder.Services.AddHostedService<TestPublishService>();
 var host = builder.Build();
 await host.RunAsync();
 
-public class DefaultFooQueueHandler : DefaultMessageHandler
+public class FooQueueHandler : IMessageHandler
 {
-    public override void HandleMessage(string message)
+    public bool HandleMessage(byte[] messageBody, string? routingKey = null,
+        string? correlationId = null)
     {
-        Console.WriteLine($"[x] Received from default foo-queue: {message}");
-        // 自定义处理逻辑
-        Task.Delay(1000).Wait();
+        var message = Encoding.UTF8.GetString(messageBody);
+        Console.WriteLine($"[x] Received from foo-queue: {message}");
+        Task.Delay(1000);
         Console.WriteLine("[x] Done");
+        return true;
     }
 }
 
-public class TestFooQueueHandler : DefaultMessageHandler
+public class BarQueueHandler : IMessageHandler
 {
-    public override void HandleMessage(string message)
+    public bool HandleMessage(byte[] messageBody, string? routingKey = null,
+        string? correlationId = null)
     {
-        Console.WriteLine($"[x] Received from test foo-queue: {message}");
-        // 自定义处理逻辑
-        Task.Delay(1000).Wait();
+        var message = Encoding.UTF8.GetString(messageBody);
+        Console.WriteLine($"[x] Received from bar-queue: {message}");
+        Task.Delay(1000);
         Console.WriteLine("[x] Done");
+        return true;
     }
 }

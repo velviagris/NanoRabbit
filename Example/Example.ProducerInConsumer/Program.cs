@@ -1,6 +1,6 @@
 ﻿using Example.ProducerInConsumer;
 using Microsoft.Extensions.Hosting;
-using NanoRabbit.Connection;
+using NanoRabbit;
 using NanoRabbit.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -24,9 +24,10 @@ builder.Services.AddRabbitHelper(builder =>
         {
             consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
+            consumer.ConsumerCount = 3;
         });
 })
-.AddRabbitConsumer<FooQueueHandler>("FooConsumer", consumers: 3);
+.AddRabbitHandler<FooQueueHandler>().AddRabbitConsumerService();
 
 using IHost host = builder.Build();
 

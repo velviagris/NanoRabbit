@@ -1,7 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Microsoft.Extensions.Logging;
 using NanoRabbit;
-using NanoRabbit.Connection;
 using System.Security.Authentication;
 
 var loggerFactory = LoggerFactory.Create(builder =>

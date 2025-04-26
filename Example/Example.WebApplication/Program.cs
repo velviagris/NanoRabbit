@@ -1,4 +1,4 @@
-using NanoRabbit.Connection;
+using NanoRabbit;
 using NanoRabbit.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);

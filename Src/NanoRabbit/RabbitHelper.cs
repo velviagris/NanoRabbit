@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using NanoRabbit.Connection;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Retry;
@@ -83,10 +82,6 @@ namespace NanoRabbit
                     _logger?.LogError($"RabbitMQ Unreachable, reconnecting...");
                     // throw;
                 }
-                finally
-                {
-                    _connection = default;
-                }
             });
 
             _channels = new ConcurrentDictionary<string, IModel>();
@@ -103,7 +98,7 @@ namespace NanoRabbit
         /// </summary>
         /// <param name="producerName"></param>
         /// <returns></returns>
-        public ProducerOptions GetProducerOption(string producerName)
+        private ProducerOptions GetProducerOption(string producerName)
         {
             if (_rabbitConfig.Producers != null)
             {
@@ -123,7 +118,7 @@ namespace NanoRabbit
         /// <param name="consumerName"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public ConsumerOptions GetConsumerOption(string? consumerName)
+        private ConsumerOptions GetConsumerOption(string? consumerName)
         {
             if (_rabbitConfig.Consumers != null)
             {

@@ -1,11 +1,11 @@
-﻿using Autofac;
+﻿using System.Text;
+using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Example.NLog;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NanoRabbit;
-using NanoRabbit.Connection;
 using NanoRabbit.DependencyInjection;
 using NLog;
 using NLog.Extensions.Logging;
@@ -64,11 +64,13 @@ IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
                 {
                     consumer.ConsumerName = "FooConsumer";
                     consumer.QueueName = "foo-queue";
+                    consumer.ConsumerCount = 3;
                 })
                 .AddConsumerOption(consumer =>
                 {
                     consumer.ConsumerName = "BarConsumer";
                     consumer.QueueName = "bar-queue";
+                    consumer.ConsumerCount = 2;
                 });
         }, loggerFactory: serviceCollection =>
         {
@@ -76,14 +78,15 @@ IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             return logger;
         })
-        .AddRabbitConsumer<FooQueueHandler>("FooConsumer", consumers: 3)
-        .AddRabbitConsumer<BarQueueHandler>("BarConsumer", consumers: 2);
+        .AddRabbitHandler<FooQueueHandler>()
+        .AddRabbitHandler<BarQueueHandler>()
+        .AddRabbitConsumerService();
 
         // register BackgroundService
         services.AddHostedService<PublishService>();
     });
 
-public class FooQueueHandler : DefaultMessageHandler
+public class FooQueueHandler : IMessageHandler
 {
     private readonly ILogger<FooQueueHandler> _logger;
 
@@ -92,15 +95,18 @@ public class FooQueueHandler : DefaultMessageHandler
         _logger = logger;
     }
 
-    public override void HandleMessage(string message)
+    public bool HandleMessage(byte[] messageBody, string? routingKey = null, string? correlationId = null)
     {
+        var message = Encoding.UTF8.GetString(messageBody);
         _logger.LogInformation($"[x] Received from foo-queue: {message}");
         Task.Delay(1000).Wait();
         _logger.LogInformation("[x] Done");
+
+        return true;
     }
 }
 
-public class BarQueueHandler : DefaultMessageHandler
+public class BarQueueHandler : IMessageHandler
 {
     private readonly ILogger<BarQueueHandler> _logger;
 
@@ -109,10 +115,13 @@ public class BarQueueHandler : DefaultMessageHandler
         _logger = logger;
     }
 
-    public override void HandleMessage(string message)
+    public bool HandleMessage(byte[] messageBody, string? routingKey = null, string? correlationId = null)
     {
+        var message = Encoding.UTF8.GetString(messageBody);
         _logger.LogInformation($"[x] Received from bar-queue: {message}");
         Task.Delay(500).Wait();
         _logger.LogInformation("[x] Done");
+        
+        return true;
     }
 }

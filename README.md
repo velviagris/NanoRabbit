@@ -5,13 +5,13 @@
 
 ## About
 
-NanoRabbit, A **Lightweight** RabbitMQ .NET 3rd party library for .NET 6 and up, which makes a simple way to manage
+NanoRabbit, A **Lightweight** RabbitMQ .NET 3rd party library for .NET 8 and up, which makes a simple way to manage
 **Multiple** *connections*, *producers*, *consumers*, and easy to use.
 
 ## Building
 
 | Branch |                                                                                 Building Status                                                                                 |
-| :----: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|:------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
 | master | [![build](https://github.com/cgcel/NanoRabbit/actions/workflows/build.yml/badge.svg?branch=master&event=push)](https://github.com/cgcel/NanoRabbit/actions/workflows/build.yml) |
 |  dev   |  [![build](https://github.com/cgcel/NanoRabbit/actions/workflows/build.yml/badge.svg?branch=dev&event=push)](https://github.com/cgcel/NanoRabbit/actions/workflows/build.yml)   |
 
@@ -30,9 +30,10 @@ See [Wiki](https://github.com/cgcel/NanoRabbit/wiki/Installation) for more detai
 ## Version
 
 |  NanoRabbit   | RabbitMQ.Client |     .NET      |
-|:-------------:| :-------------: | :-----------: |
+|:-------------:|:---------------:|:-------------:|
 | 0.0.1 ~ 0.1.8 |    obsolete     |   obsolete    |
 | 0.1.9 ~ 0.2.3 |   6.5.0-6.8.1   | 6.0, 7.0, 8.0 |
+|     0.2.4     |   6.5.0-6.8.1   |      8.0      |
 
 ## Document
 
@@ -40,7 +41,8 @@ For details, see: [NanoRabbit Wiki](https://github.com/cgcel/NanoRabbit/wiki).
 
 ## QuickStart
 
-> *NanoRabbit is designed as a library depends on **NAMING** Connections, Producers and Consumers. So it's important to set
+> *NanoRabbit is designed as a library depends on **NAMING** Connections, Producers and Consumers. So it's important to
+set
 a **UNIQUE NAME** for each Connections, Producers and Consumers.*
 
 For more, please visit the [Examples](https://github.com/cgcel/NanoRabbit/tree/master/Example).
@@ -49,7 +51,8 @@ For more, please visit the [Examples](https://github.com/cgcel/NanoRabbit/tree/m
 
 #### RabbitProducer
 
-Register a RabbitMQ Producer by calling `RabbitHelper(RabbitConfiguration rabbitConfig, ILogger<RabbitHelper>? logger = null)`, and configure it.
+Register a RabbitMQ Producer by calling
+`RabbitHelper(RabbitConfiguration rabbitConfig, ILogger<RabbitHelper>? logger = null)`, and configure it.
 
 ```csharp
 using NanoRabbit;
@@ -104,7 +107,8 @@ var rabbitHelper = new RabbitHelper(rabbitConfig: new RabbitConfiguration
 
 ### Simple Publish Messages
 
-[After](#rabbitproducer) registering a `RabbitProducer` in the `RabbitHelper`, you can simply publish a message by calling `Publish<T>(string producerName, T message)`.
+[After](#rabbitproducer) registering a `RabbitProducer` in the `RabbitHelper`, you can simply publish a message by
+calling `Publish<T>(string producerName, T message)`.
 
 ```csharp
 rabbitHelper.Publish<string>("FooProducer", "Hello from NanoRabbit");

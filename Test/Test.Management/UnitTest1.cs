@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using NanoRabbit;
-using NanoRabbit.Connection;
 
 namespace Test.Management
 {
