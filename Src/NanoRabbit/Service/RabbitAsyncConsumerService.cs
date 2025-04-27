@@ -150,7 +150,7 @@ namespace NanoRabbit.Service
             // This is essential for working with Scoped services
             using (var scope = _serviceProvider.CreateScope())
             {
-                var messageHandler = scope.ServiceProvider.GetRequiredKeyedService<IAsyncMessageHandler>(_options.HandlerIdentifier);
+                var messageHandler = scope.ServiceProvider.GetRequiredKeyedService<IAsyncMessageHandler>(_options.HandlerName);
 
                 if (messageHandler == null)
                 {

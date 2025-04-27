@@ -150,7 +150,7 @@ namespace NanoRabbit.Service
             // 这对于使用 Scoped 服务（如 DbContext）至关重要
             using (var scope = _serviceProvider.CreateScope())
             {
-                var messageHandler = scope.ServiceProvider.GetRequiredKeyedService<IMessageHandler>(_options.HandlerIdentifier); // 解析消息处理器
+                var messageHandler = scope.ServiceProvider.GetRequiredKeyedService<IMessageHandler>(_options.HandlerName); // 解析消息处理器
                 // 或者解析特定类型的处理器
                 // var specificHandler = scope.ServiceProvider.GetService<IOrderMessageHandler>();
 

@@ -6,9 +6,9 @@ using NanoRabbit.DependencyInjection;
 var builder = Host.CreateApplicationBuilder(args);
 
 // Configure the RabbitMQ Connection
-builder.Services.AddRabbitHelper(builder =>
+builder.Services.AddRabbitHelper(rabbitConfigurationBuilder =>
 {
-    builder.SetHostName("localhost")
+    rabbitConfigurationBuilder.SetHostName("localhost")
         .SetPort(5672)
         .SetVirtualHost("/")
         .SetUserName("admin")

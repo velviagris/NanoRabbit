@@ -8,7 +8,8 @@ using NanoRabbit.DependencyInjection;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddRabbitHelperFromAppSettings<FooConfiguration>(builder.Configuration)
     .AddRabbitHandler<FooQueueHandler>()
-    .AddRabbitHandler<BarQueueHandler>().AddRabbitConsumerServiceFromAppSettings<FooConfiguration>(builder.Configuration);
+    .AddRabbitHandler<BarQueueHandler>()
+    .AddRabbitConsumerServiceFromAppSettings<FooConfiguration>(builder.Configuration);
 
 builder.Services.AddHostedService<PublishService>();
 
@@ -35,9 +36,11 @@ public class BarQueueHandler : IMessageHandler
         Console.WriteLine($"[x] Received from bar-queue: {message}");
         Task.Delay(500).Wait();
         Console.WriteLine("[x] Done");
-        
+
         return true;
     }
 }
 
-public class FooConfiguration : RabbitConfiguration { }
+public class FooConfiguration : RabbitConfiguration
+{
+}

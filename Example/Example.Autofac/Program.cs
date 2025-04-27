@@ -8,15 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NanoRabbit;
 
-try
-{
-    var host = CreateHostBuilder(args).Build();
-    await host.RunAsync();
-}
-catch (Exception)
-{
-    throw;
-}
+var host = CreateHostBuilder(args).Build();
+await host.RunAsync();
 
 IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
@@ -52,12 +45,14 @@ IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
                         consumer.ConsumerName = "FooConsumer";
                         consumer.QueueName = "foo-queue";
                         consumer.ConsumerCount = 3;
+                        consumer.HandlerName = nameof(FooQueueHandler);
                     })
                     .AddConsumerOption(consumer =>
                     {
                         consumer.ConsumerName = "BarConsumer";
                         consumer.QueueName = "bar-queue";
                         consumer.ConsumerCount = 2;
+                        consumer.HandlerName = nameof(BarQueueHandler);
                     });
             }, serviceCollection =>
             {

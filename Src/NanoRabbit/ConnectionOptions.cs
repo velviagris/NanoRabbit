@@ -67,7 +67,7 @@ public class ConsumerOptions
     /// <summary>
     /// Customize handler name
     /// </summary>
-    public string HandlerIdentifier { get; set; } = null!;
+    public string HandlerName { get; set; } = null!;
 
     /// <summary>
     /// Subscribe queue name

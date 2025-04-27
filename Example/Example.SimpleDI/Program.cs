@@ -27,12 +27,14 @@ builder.Services.AddRabbitHelper(builder =>
             consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
             consumer.ConsumerCount = 3;
+            consumer.HandlerName = nameof(FooQueueHandler);
         })
         .AddConsumerOption(consumer =>
         {
             consumer.ConsumerName = "BarConsumer";
             consumer.QueueName = "bar-queue";
             consumer.ConsumerCount = 2;
+            consumer.HandlerName = nameof(BarQueueHandler);
         });
 })
 .AddRabbitHandler<FooQueueHandler>()

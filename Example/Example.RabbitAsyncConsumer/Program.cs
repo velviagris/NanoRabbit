@@ -5,9 +5,9 @@ using NanoRabbit.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder();
 
-builder.Services.AddRabbitHelper(builder =>
+builder.Services.AddRabbitHelper(rabbitConfigurationBuilder =>
 {
-    builder.SetHostName("localhost")
+    rabbitConfigurationBuilder.SetHostName("localhost")
         .SetPort(5672)
         .SetVirtualHost("/")
         .SetUserName("admin")
@@ -25,12 +25,14 @@ builder.Services.AddRabbitHelper(builder =>
             consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
             consumer.ConsumerCount = 3;
+            consumer.HandlerName = nameof(FooQueueHandler);
         })
         .AddConsumerOption(consumer =>
         {
             consumer.ConsumerName = "BarConsumer";
             consumer.QueueName = "bar-queue";
             consumer.ConsumerCount = 2;
+            consumer.HandlerName = nameof(BarQueueHandler);
         });
 })
 .AddRabbitAsyncHandler<FooQueueHandler>()

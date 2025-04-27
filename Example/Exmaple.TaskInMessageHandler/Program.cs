@@ -11,13 +11,13 @@ var builder = Host.CreateApplicationBuilder();
 // must be injected before IRabbitHelper's injection.
 builder.Services.AddSingleton<IRedisConnectionFactory>(provider =>
 {
-    var connStr = provider.GetRequiredService<IConfiguration>().GetSection("DbConfig").GetSection(nameof(RedisConfig)).Get<RedisConfig>().DbConnStr;
+    var connStr = provider.GetRequiredService<IConfiguration>().GetSection("DbConfig").GetSection(nameof(RedisConfig)).Get<RedisConfig>()?.DbConnStr;
     return new RedisConnectionFactory(connStr);
 });
 
-builder.Services.AddKeyedRabbitHelper("test", builder =>
+builder.Services.AddKeyedRabbitHelper("test", rabbitConfigurationBuilder =>
 {
-    builder.SetHostName("localhost")
+    rabbitConfigurationBuilder.SetHostName("localhost")
         .SetPort(5672)
         .SetVirtualHost("test")
         .SetUserName("admin")
@@ -31,9 +31,9 @@ builder.Services.AddKeyedRabbitHelper("test", builder =>
         });
 });
 
-builder.Services.AddKeyedRabbitHelper("default", builder =>
+builder.Services.AddKeyedRabbitHelper("default", rabbitConfigurationBuilder =>
 {
-    builder.SetHostName("localhost")
+    rabbitConfigurationBuilder.SetHostName("localhost")
         .SetPort(5672)
         .SetVirtualHost("/")
         .SetUserName("admin")
@@ -43,9 +43,10 @@ builder.Services.AddKeyedRabbitHelper("default", builder =>
         {
             consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
+            consumer.HandlerName = nameof(FooQueueHandler);
         });
 })
-.AddKeyedRabbitAsyncHandler<FooQueueHandler>("default");
+.AddRabbitAsyncHandler<FooQueueHandler>();
 
 
 var host = builder.Build();
@@ -68,7 +69,7 @@ public class FooQueueHandler : IAsyncMessageHandler
         Task.Run(() => ProcessQueueAsync());
     }
     
-    public async Task<bool> HandleMessageAsync(byte[] messageBody, string? routingKey = null, string? correlationId = null)
+    public Task<bool> HandleMessageAsync(byte[] messageBody, string? routingKey = null, string? correlationId = null)
     {
         var message = Encoding.UTF8.GetString(messageBody);
         Console.WriteLine($"[x] Received from foo-queue: {message}");
@@ -76,7 +77,7 @@ public class FooQueueHandler : IAsyncMessageHandler
         _queue.Enqueue(message);
 
         Console.WriteLine($"Message {message} enqueued.");
-        return true;
+        return Task.FromResult(true);
     }
 
     private async Task ProcessQueueAsync()

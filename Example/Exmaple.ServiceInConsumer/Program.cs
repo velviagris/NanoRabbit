@@ -1,10 +1,7 @@
 ﻿using System.Text;
-using Autofac.Extensions.DependencyInjection;
-using Autofac;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NanoRabbit;
 using NanoRabbit.DependencyInjection;
 
@@ -13,13 +10,13 @@ var builder = Host.CreateApplicationBuilder();
 // must be injected before IRabbitHelper's injection.
 builder.Services.AddSingleton<IRedisConnectionFactory>(provider =>
 {
-    var connStr = provider.GetRequiredService<IConfiguration>().GetSection("DbConfig").GetSection(nameof(RedisConfig)).Get<RedisConfig>().DbConnStr;
+    var connStr = provider.GetRequiredService<IConfiguration>().GetSection("DbConfig").GetSection(nameof(RedisConfig)).Get<RedisConfig>()?.DbConnStr;
     return new RedisConnectionFactory(connStr);
 });
 
-builder.Services.AddKeyedRabbitHelper("test", builder =>
+builder.Services.AddKeyedRabbitHelper("test", rabbitConfigurationBuilder =>
 {
-    builder.SetHostName("localhost")
+    rabbitConfigurationBuilder.SetHostName("localhost")
         .SetPort(5672)
         .SetVirtualHost("test")
         .SetUserName("admin")
@@ -33,9 +30,9 @@ builder.Services.AddKeyedRabbitHelper("test", builder =>
         });
 });
 
-builder.Services.AddKeyedRabbitHelper("default", builder =>
+builder.Services.AddKeyedRabbitHelper("default", rabbitConfigurationBuilder =>
 {
-    builder.SetHostName("localhost")
+    rabbitConfigurationBuilder.SetHostName("localhost")
         .SetPort(5672)
         .SetVirtualHost("/")
         .SetUserName("admin")
@@ -45,9 +42,10 @@ builder.Services.AddKeyedRabbitHelper("default", builder =>
         {
             consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
+            consumer.HandlerName = nameof(FooQueueHandler);
         });
 })
-.AddKeyedRabbitAsyncHandler<FooQueueHandler>("default");
+.AddRabbitAsyncHandler<FooQueueHandler>();
 
 // Test redis service
 //builder.Services.AddHostedService<TestHostedService>();

@@ -47,11 +47,11 @@ public static class RabbitConsumerServiceExtensions
                 continue;
             }
 
-            // Ensure that the HandlerIdentifier exists, as it is needed by the consumer service to resolve the handler
-            if (string.IsNullOrWhiteSpace(consumerOptions.HandlerIdentifier))
+            // Ensure that the HandlerName exists, as it is needed by the consumer service to resolve the handler
+            if (string.IsNullOrWhiteSpace(consumerOptions.HandlerName))
             {
                 Console.WriteLine(
-                    $"[Warning] Host '{configuration.HostName}'-'{consumerOptions.ConsumerName}' missing HandlerIdentifier, The HandlerIdentifier is the name of the IMessageHandler. Be sure to configure each consumer with a HandlerIdentifier in order to resolve the corresponding IMessageHandler.");
+                    $"[Warning] Host '{configuration.HostName}'-'{consumerOptions.ConsumerName}' missing HandlerName, The HandlerName is the name of the IMessageHandler. Be sure to configure each consumer with a HandlerIdentifier in order to resolve the corresponding IMessageHandler.");
                 continue;
             }
 
@@ -137,10 +137,10 @@ public static class RabbitConsumerServiceExtensions
             }
 
             // Ensure that the HandlerIdentifier exists, as it is needed by the consumer service to resolve the handler
-            if (string.IsNullOrWhiteSpace(consumerOptions.HandlerIdentifier))
+            if (string.IsNullOrWhiteSpace(consumerOptions.HandlerName))
             {
                 Console.WriteLine(
-                    $"[Warning] Host '{configuration.HostName}'-'{consumerOptions.ConsumerName}' missing HandlerIdentifier, The HandlerIdentifier is the name of the IMessageHandler. Be sure to configure each consumer with a HandlerIdentifier in order to resolve the corresponding IMessageHandler.");
+                    $"[Warning] Host '{configuration.HostName}'-'{consumerOptions.ConsumerName}' missing HandlerName, The HandlerName is the name of the IMessageHandler. Be sure to configure each consumer with a HandlerName in order to resolve the corresponding IMessageHandler.");
                 continue;
             }
 
@@ -225,11 +225,11 @@ public static class RabbitConsumerServiceExtensions
                 continue;
             }
 
-            // Ensure that the HandlerIdentifier exists, as it is needed by the consumer service to resolve the handler
-            if (string.IsNullOrWhiteSpace(consumerOptions.HandlerIdentifier))
+            // Ensure that the HandlerName exists, as it is needed by the consumer service to resolve the handler
+            if (string.IsNullOrWhiteSpace(consumerOptions.HandlerName))
             {
                 Console.WriteLine(
-                    $"[Warning] Host '{rabbitConfig.HostName}'-'{consumerOptions.ConsumerName}' missing HandlerIdentifier, The HandlerIdentifier is the name of the IMessageHandler. Be sure to configure each consumer with a HandlerIdentifier in order to resolve the corresponding IMessageHandler.");
+                    $"[Warning] Host '{rabbitConfig.HostName}'-'{consumerOptions.ConsumerName}' missing HandlerName, The HandlerName is the name of the IMessageHandler. Be sure to configure each consumer with a HandlerName in order to resolve the corresponding IMessageHandler.");
                 continue;
             }
 

@@ -2,70 +2,15 @@
 using Example.MultiConnections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NanoRabbit;
 using NanoRabbit.DependencyInjection;
-using NanoRabbit.Service;
 
 var builder = Host.CreateApplicationBuilder();
 
 
-
-var fooConfig = new RabbitConfiguration
+builder.Services.AddKeyedRabbitHelper("DefaultRabbitHelper", rabbitConfigurationBuilder =>
 {
-    HostName = "localhost",
-    Port = 5672,
-    UserName = "admin",
-    Password = "admin",
-    VirtualHost = "/",
-    UseAsyncConsumer = false,
-    ConnectionName = "FooConnection",
-    Consumers = new List<ConsumerOptions>()
-    {
-        new ConsumerOptions
-        {
-            ConsumerName = "FooConsumer",
-            HandlerIdentifier = "FooQueueHandler",
-            QueueName = "foo-queue",
-            AutomaticRecoveryEnabled = true,
-            PrefetchSize = 0,
-            PrefetchCount = 10,
-            AutoAck = false,
-            ConsumerCount = 2
-        }
-    }
-};
-
-var barConfig = new RabbitConfiguration
-{
-    HostName = "localhost",
-    Port = 5672,
-    UserName = "admin",
-    Password = "admin",
-    VirtualHost = "/",
-    UseAsyncConsumer = false,
-    ConnectionName = "BarConnection",
-    Consumers = new List<ConsumerOptions>()
-    {
-        new ConsumerOptions
-        {
-            ConsumerName = "BarConsumer",
-            HandlerIdentifier = "BarQueueHandler",
-            QueueName = "bar-queue",
-            AutomaticRecoveryEnabled = true,
-            PrefetchSize = 0,
-            PrefetchCount = 10,
-            AutoAck = false,
-        }
-    }
-};
-
-// builder.Services.AddKeyedScoped<IMessageHandler, FooQueueHandler>(nameof(FooQueueHandler));
-// builder.Services.AddKeyedScoped<IMessageHandler, BarQueueHandler>("BarQueueHandler");
-
-builder.Services.AddKeyedRabbitHelper("DefaultRabbitHelper", builder =>
-{
-    builder.SetHostName("localhost")
+    rabbitConfigurationBuilder.SetHostName("localhost")
         .SetPort(5672)
         .SetVirtualHost("/")
         .SetUserName("admin")
@@ -82,34 +27,34 @@ builder.Services.AddKeyedRabbitHelper("DefaultRabbitHelper", builder =>
         {
             consumer.ConsumerName = "FooConsumer";
             consumer.QueueName = "foo-queue";
-            consumer.HandlerIdentifier = "FooQueueHandler";
+            consumer.HandlerName = nameof(FooQueueHandler);
         });
 });
 
-builder.Services.AddKeyedRabbitHelper("TestRabbitHelper", builder =>
+builder.Services.AddKeyedRabbitHelper("TestRabbitHelper", rabbitConfigurationBuilder =>
 {
-    builder.SetHostName("localhost")
-    .SetPort(5672)
-    .SetVirtualHost("test")
-    .SetUserName("admin")
-    .SetPassword("admin")
-    .AddProducerOption(producer =>
-    {
-        producer.ProducerName = "FooProducer";
-        producer.ExchangeName = "amq.topic";
-        producer.RoutingKey = "foo.key";
-        producer.Type = ExchangeType.Topic;
-    })
-    .AddConsumerOption(consumer =>
-    {
-        consumer.ConsumerName = "BarConsumer";
-        consumer.QueueName = "foo-queue";
-        consumer.HandlerIdentifier = "BarQueueHandler";
-    });
+    rabbitConfigurationBuilder.SetHostName("localhost")
+        .SetPort(5672)
+        .SetVirtualHost("test")
+        .SetUserName("admin")
+        .SetPassword("admin")
+        .AddProducerOption(producer =>
+        {
+            producer.ProducerName = "FooProducer";
+            producer.ExchangeName = "amq.topic";
+            producer.RoutingKey = "foo.key";
+            producer.Type = ExchangeType.Topic;
+        })
+        .AddConsumerOption(consumer =>
+        {
+            consumer.ConsumerName = "BarConsumer";
+            consumer.QueueName = "foo-queue";
+            consumer.HandlerName = nameof(BarQueueHandler);
+        });
 });
 
-builder.Services.AddKeyedRabbitHandler<FooQueueHandler>(nameof(FooQueueHandler));
-builder.Services.AddKeyedRabbitHandler<BarQueueHandler>(nameof(BarQueueHandler));
+builder.Services.AddRabbitHandler<FooQueueHandler>();
+builder.Services.AddRabbitHandler<BarQueueHandler>();
 
 builder.Services.AddKeyedRabbitConsumerService("DefaultRabbitHelper");
 builder.Services.AddKeyedRabbitConsumerService("TestRabbitHelper");
