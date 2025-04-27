@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        target-framework: [ 'net6.0', 'net7.0', 'net8.0']
+        target-framework: ['net8.0']
     
     runs-on: ${{ matrix.os }}
 
@@ -22,8 +22,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
-          6.0.x
-          7.0.x
           8.0.x
 
     - name: Restore dependencies
