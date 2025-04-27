@@ -7,12 +7,11 @@ on: [push]
 
 jobs:
   build:
-
     strategy:
       matrix:
         os: [ ubuntu-latest ]
         target-framework: ['net8.0']
-    
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -26,9 +25,18 @@ jobs:
 
     - name: Restore dependencies
       run: dotnet restore
-      
-    - name: Build ${{ matrix.target-framework }}
-      run: dotnet build --framework ${{ matrix.target-framework }}
 
-    # - name: Test with the dotnet CLI ${{ matrix.target-framework }}
-    #   run: dotnet test --framework ${{ matrix.target-framework }}
+    - name: Build ${{ matrix.target-framework }}
+      run: dotnet build --configuration Release --framework ${{ matrix.target-framework }}
+
+    - name: Test ${{ matrix.target-framework }}
+      run: dotnet test --configuration Release --framework ${{ matrix.target-framework }} --no-restore --verbosity normal
+
+    - name: Pack ${{ matrix.target-framework }}
+      run: dotnet pack ./Src/NanoRabbit/NanoRabbit/NanoRabbit.csproj --configuration Release --framework ${{ matrix.target-framework }} --output ./nupkg/
+
+    - name: Upload NuGet package
+      uses: actions/upload-artifact@v3
+      with:
+        name: nupkg-${{ matrix.os }}-${{ matrix.target-framework }}
+        path: ./nupkg/
