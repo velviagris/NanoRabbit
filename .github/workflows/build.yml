@@ -6,28 +6,49 @@ name: build
 on: [push]
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ ubuntu-latest ]
-        target-framework: ['net8.0']
-
-    runs-on: ${{ matrix.os }}
-
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup dotnet
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: |
-          8.0.x
+        dotnet-version: 8.0.x
+
+    - name: Run dotnet format
+      run: dotnet format --check
+
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        target-framework: ['net6.0', 'net7.0', 'net8.0']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.fsproj') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
+
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
 
     - name: Restore dependencies
       run: dotnet restore
 
     - name: Build ${{ matrix.target-framework }}
-      run: dotnet build --configuration Release --framework ${{ matrix.target-framework }}
+      run: dotnet build --configuration Release --framework ${{ matrix.target-framework }} --no-restore
 
     - name: Test ${{ matrix.target-framework }}
       run: dotnet test --configuration Release --framework ${{ matrix.target-framework }} --no-restore --verbosity normal
