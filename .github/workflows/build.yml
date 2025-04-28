@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     
     - name: Clean build artifacts
       run: |
@@ -41,7 +41,7 @@ jobs:
       run: dotnet pack ./Src/NanoRabbit/NanoRabbit/NanoRabbit.csproj --configuration Release --framework ${{ matrix.target-framework }} --output ./nupkg/
 
     - name: Upload NuGet package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nupkg-${{ matrix.os }}-${{ matrix.target-framework }}
         path: ./nupkg/
