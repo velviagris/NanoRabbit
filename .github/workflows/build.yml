@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        target-framework: ['net6.0', 'net7.0', 'net8.0']
+        target-framework: ['net8.0']
 
     runs-on: ${{ matrix.os }}
 
