@@ -55,7 +55,7 @@ public interface IRabbitHelper
     public void AddConsumer(string consumerName, Action<string> onMessageReceived, int consumers = 1);
     
     /// <summary>
-    /// Add a asynchronous consumer by using predefined consumer configs.
+    /// Add an asynchronous consumer by using predefined consumer configs.
     /// </summary>
     /// <param name="consumerName"></param>
     /// <param name="onMessageReceivedAsync"></param>

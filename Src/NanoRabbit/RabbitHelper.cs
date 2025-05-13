@@ -71,13 +71,13 @@ namespace NanoRabbit
                 .AddTimeout(TimeSpan.FromSeconds(10)) // Add 10 seconds timeout
                 .Build(); // Builds the resilience pipeline
 
-            _pipeline.Execute(token =>
+            _pipeline.Execute(_ =>
             {
                 try
                 {
                     _connection = factory.CreateConnection();
                 }
-                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException e)
+                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException)
                 {
                     _logger?.LogError($"RabbitMQ Unreachable, reconnecting...");
                     // throw;
@@ -142,7 +142,7 @@ namespace NanoRabbit
         public void Publish<T>(string producerName, T message, IBasicProperties? properties = null)
         {
             var messageStr = SerializeMessage(message) ?? "";
-            _pipeline.Execute(token =>
+            _pipeline.Execute(_ =>
             {
                 try
                 {
@@ -154,11 +154,11 @@ namespace NanoRabbit
                     properties = SetBasicProperties(channel, properties);
                     PublishMessage(option, properties, body);
 
-                    _logger?.LogInformation($"{producerName}|Published|{messageStr}");
+                    _logger.LogInformation($"{producerName}|Published|{messageStr}");
                 }
                 catch (Exception e)
                 {
-                    _logger?.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
+                    _logger.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
                     // throw;
                 }
             });
@@ -190,7 +190,7 @@ namespace NanoRabbit
                     var messageStr = SerializeMessage(message) ?? "";
                     var body = Encoding.UTF8.GetBytes(messageStr);
 
-                    _pipeline.Execute(token =>
+                    _pipeline.Execute(_ =>
                     {
                         try
                         {
@@ -199,14 +199,14 @@ namespace NanoRabbit
                         }
                         catch (Exception e)
                         {
-                            _logger?.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
+                            _logger.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
                             throw;
                         }
-                    });
+                    }, token);
                 });
             });
 
-            _logger?.LogInformation($"{producerName}|Published a batch of messgages.");
+            _logger.LogInformation($"{producerName}|Published a batch of messgages.");
         }
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace NanoRabbit
         {
             var messageStr = SerializeMessage(message) ?? "";
 
-            await _pipeline.ExecuteAsync(async token =>
+            await _pipeline.ExecuteAsync(async _ =>
             {
                 try
                 {
@@ -232,11 +232,11 @@ namespace NanoRabbit
                     properties = SetBasicProperties(channel, properties);
                     await PublishMessageAsync(option, properties, body);
 
-                    _logger?.LogInformation($"{producerName}|Published|{messageStr}");
+                    _logger.LogInformation($"{producerName}|Published|{messageStr}");
                 }
                 catch (Exception e)
                 {
-                    _logger?.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
+                    _logger.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
                     throw;
                 }
             });
@@ -254,7 +254,7 @@ namespace NanoRabbit
         {
             var messageObjs = messageList.ToList();
 
-            await _pipeline.ExecuteAsync(async token =>
+            await _pipeline.ExecuteAsync(async _ =>
             {
                 var option = GetProducerOption(producerName);
                 var channel = GetOrCreatePublishChannel(option.ProducerName);
@@ -268,7 +268,7 @@ namespace NanoRabbit
                     var messageStr = SerializeMessage(message) ?? "";
                     var body = Encoding.UTF8.GetBytes(messageStr);
 
-                    await _pipeline.ExecuteAsync(async token =>
+                    await _pipeline.ExecuteAsync(async _ =>
                     {
                         try
                         {
@@ -277,7 +277,7 @@ namespace NanoRabbit
                         }
                         catch (Exception e)
                         {
-                            _logger?.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
+                            _logger.LogError($"{producerName}|Published|{messageStr}|Failed|{e.Message}");
                             throw;
                         }
                     });
@@ -286,7 +286,7 @@ namespace NanoRabbit
                 await Task.WhenAll(publishTasks);
             });
 
-            _logger?.LogInformation($"{producerName}|Published a batch of messgages.");
+            _logger.LogInformation($"{producerName}|Published a batch of messgages.");
         }
 
         /// <summary>
@@ -534,7 +534,7 @@ namespace NanoRabbit
                     if (isAsync && !_asyncConsumers.ContainsKey(consumerId))
                     {
                         var consumer = new AsyncEventingBasicConsumer(channel);
-                        consumer.Received += async (model, ea) =>
+                        consumer.Received += async (_, ea) =>
                         {
                             var body = ea.Body.ToArray();
                             var message = Encoding.UTF8.GetString(body);
@@ -542,7 +542,7 @@ namespace NanoRabbit
                             if (onMessageReceivedAsync != null)
                                 await onMessageReceivedAsync(message);
 
-                            channel?.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                            channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                             await Task.Yield();
                         };
 
@@ -552,7 +552,7 @@ namespace NanoRabbit
                     else if (!isAsync && !_consumers.ContainsKey(consumerId))
                     {
                         var consumer = new EventingBasicConsumer(channel);
-                        consumer.Received += (model, ea) =>
+                        consumer.Received += (_, ea) =>
                         {
                             var body = ea.Body.ToArray();
                             var message = Encoding.UTF8.GetString(body);
@@ -560,7 +560,7 @@ namespace NanoRabbit
                             if (onMessageReceived != null)
                                 onMessageReceived(message);
 
-                            channel?.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                            channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                         };
 
                         channel.BasicConsume(queue: option.QueueName, autoAck: false, consumer: consumer);

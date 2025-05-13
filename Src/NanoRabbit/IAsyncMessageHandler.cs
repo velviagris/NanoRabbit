@@ -8,51 +8,56 @@ namespace NanoRabbit;
 public interface IAsyncMessageHandler
 {
     /// <summary>
-    /// 处理接收到的消息
+    /// Handles the received message.
     /// </summary>
-    /// <param name="messageBody">消息体 (原始字节)</param>
-    /// <param name="routingKey">消息的路由键 (如果适用)</param>
-    /// <param name="correlationId">消息的关联 ID (如果适用)</param>
-    /// <returns>如果处理成功，返回 true；否则返回 false。</returns>
+    /// <param name="messageBody">The message body (raw bytes).</param>
+    /// <param name="routingKey">The routing key of the message (if applicable).</param>
+    /// <param name="correlationId">The correlation ID of the message (if applicable).</param>
+    /// <returns>Returns true if the message was handled successfully; otherwise, false.</returns>
     Task<bool> HandleMessageAsync(byte[] messageBody, string? routingKey = null, string? correlationId = null);
 }
 
+/// <summary>
+/// Default message handler
+/// </summary>
 public class DefaultAsyncMessageHandler : IAsyncMessageHandler
 {
     private readonly ILogger<DefaultMessageHandler> _logger;
-    // 可以注入其他服务，如数据库上下文、业务逻辑服务等
-    // private readonly MyDbContext _dbContext;
 
-    public DefaultAsyncMessageHandler(ILogger<DefaultMessageHandler> logger/*, MyDbContext dbContext*/)
+    /// <summary>
+    /// Default message handler constructor
+    /// </summary>
+    /// <param name="logger"></param>
+    public DefaultAsyncMessageHandler(ILogger<DefaultMessageHandler> logger)
     {
         _logger = logger;
-        // _dbContext = dbContext;
     }
 
+    /// <summary>
+    /// Implement of message handler
+    /// </summary>
+    /// <param name="messageBody"></param>
+    /// <param name="routingKey"></param>
+    /// <param name="correlationId"></param>
+    /// <returns></returns>
     public async Task<bool> HandleMessageAsync(byte[] messageBody, string? routingKey = null, string? correlationId = null)
     {
         try
         {
-            // 1. 反序列化消息
+            // Deserialize the message
             var messageString = System.Text.Encoding.UTF8.GetString(messageBody);
-            _logger.LogInformation("接收到消息 (处理器): RoutingKey='{RoutingKey}', CorrelationId='{CorrelationId}', Body='{MessageBody}'",
+            _logger.LogInformation("Received message (Handler): RoutingKey='{RoutingKey}', CorrelationId='{CorrelationId}', Body='{MessageBody}'",
                 routingKey, correlationId, messageString);
 
-            // TODO: 在这里根据消息内容执行你的业务逻辑
-            // 例如：反序列化为具体对象、保存到数据库、调用其他服务等
-            // var myMessage = JsonSerializer.Deserialize<MyMessageObject>(messageString);
-            // await _dbContext.ProcessMessageAsync(myMessage);
+            await Task.Delay(100);
 
-            // 模拟处理耗时
-            await Task.Delay(100); // 模拟工作负载
-
-            _logger.LogInformation("消息处理成功 (处理器)。");
-            return true; // 返回 true 表示处理成功
+            _logger.LogInformation("Message handled successfully (Handler).");
+            return true; // Return true to indicate successful processing
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "处理消息时发生错误 (处理器)。 CorrelationId='{CorrelationId}'", correlationId);
-            return false; // 返回 false 表示处理失败
+            _logger.LogError(ex, "An error occurred while handling the message (Handler). CorrelationId='{CorrelationId}'", correlationId);
+            return false; // Return false to indicate failed processing
         }
     }
 }
