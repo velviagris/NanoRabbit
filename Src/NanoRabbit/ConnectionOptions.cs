@@ -39,7 +39,7 @@ public class ProducerOptions
     public bool AutoDelete { get; set; } = false;
 
     /// <summary>
-    /// Set to false to disable automatic connection recovery. Defaults to true.
+    /// Set false to disable automatic connection recovery. Defaults to true.
     /// </summary>
     public bool AutomaticRecoveryEnabled { get; set; } = true;
 
@@ -75,7 +75,7 @@ public class ConsumerOptions
     public string QueueName { get; set; } = null!;
 
     /// <summary>
-    /// Set to false to disable automatic connection recovery. Defaults to true.
+    /// Set false to disable automatic connection recovery. Defaults to true.
     /// </summary>
     public bool AutomaticRecoveryEnabled { get; set; } = true;
 
@@ -161,7 +161,7 @@ public class RabbitConfiguration
 
     /// <summary>
     /// RabbitProducer configs.
-    /// Dafaults: null
+    /// Defaults: null
     /// </summary>
     public List<ProducerOptions>? Producers { get; set; }
     /// <summary>
