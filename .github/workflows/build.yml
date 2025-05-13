@@ -28,7 +28,7 @@ jobs:
       run: dotnet restore
       
     - name: Build ${{ matrix.target-framework }}
-      run: dotnet build --framework ${{ matrix.target-framework }}
+      run: dotnet build --framework ${{ matrix.target-framework }} /m:1
 
     # - name: Test with the dotnet CLI ${{ matrix.target-framework }}
     #   run: dotnet test --framework ${{ matrix.target-framework }}
