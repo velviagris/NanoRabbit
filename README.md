@@ -33,7 +33,7 @@ See [Wiki](https://github.com/cgcel/NanoRabbit/wiki/Installation) for more detai
 |:-------------:|:---------------:|:-------------:|
 | 0.0.1 ~ 0.1.8 |    obsolete     |   obsolete    |
 | 0.1.9 ~ 0.2.3 |   6.5.0-6.8.1   | 6.0, 7.0, 8.0 |
-|     0.2.4     |      7.1.2      |      8.0      |
+|     0.2.4     |      6.5.0-6.8.1      |      8.0      |
 
 ## Document
 
