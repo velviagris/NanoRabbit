@@ -7,6 +7,9 @@ using NanoRabbit.Service;
 
 namespace NanoRabbit.DependencyInjection;
 
+/// <summary>
+/// Rabbit Consumer Services Extensions
+/// </summary>
 public static class RabbitConsumerServiceExtensions
 {
     /// <summary>

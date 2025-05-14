@@ -92,7 +92,7 @@ namespace NanoRabbit.Service
 
             try
             {
-                _logger.LogInformation("RabbitMQ Consumer [{InstanceId}] Connectiong to {HostName}:{Port}...", _instanceId,
+                _logger.LogInformation("RabbitMQ Consumer [{InstanceId}] Connecting to {HostName}:{Port}...", _instanceId,
                     factory.HostName, factory.Port);
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
@@ -120,7 +120,7 @@ namespace NanoRabbit.Service
                 }
 
                 _consumer = new AsyncEventingBasicConsumer(_channel);
-                _consumer.Received += async (model, ea) => { await HandleMessageReceived(ea, stoppingToken); };
+                _consumer.Received += async (_, ea) => { await HandleMessageReceived(ea, stoppingToken); };
                 
                 _consumerTag = _channel.BasicConsume(queue: _options.QueueName, autoAck: _options.AutoAck,
                     consumer: _consumer);

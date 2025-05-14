@@ -62,7 +62,7 @@ namespace NanoRabbit.Service
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "RabbitMQ Consumer Service [{InstanceId}] An unhandled exception occurred. Will retry after 5 seconds...", _instanceId);
-                    // 关闭可能存在的旧资源
+                    // Close old resources that may exist
                     CloseConnection();
                     await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
@@ -91,7 +91,7 @@ namespace NanoRabbit.Service
 
             try
             {
-                _logger.LogInformation("RabbitMQ Consumer [{InstanceId}] Connectiong to {HostName}:{Port}...", _instanceId,
+                _logger.LogInformation("RabbitMQ Consumer [{InstanceId}] Connecting to {HostName}:{Port}...", _instanceId,
                     factory.HostName, factory.Port);
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
@@ -106,8 +106,7 @@ namespace NanoRabbit.Service
                 _channel.BasicQos(prefetchSize: 0, prefetchCount: _options.PrefetchCount, global: false);
                 _logger.LogInformation("RabbitMQ Consumer [{InstanceId}] QoS Set PrefetchCount={PrefetchCount}", _instanceId,
                     _options.PrefetchCount);
-
-                // 声明队列（如果配置了）
+                
                 if (_options.DeclareQueue)
                 {
                     _logger.LogInformation("RabbitMQ Consumer [{InstanceId}] Declaring Queue '{QueueName}'...", _instanceId,
@@ -120,7 +119,7 @@ namespace NanoRabbit.Service
                 }
 
                 _consumer = new EventingBasicConsumer(_channel);
-                _consumer.Received += (model, ea) => { HandleMessageReceived(ea, stoppingToken); };
+                _consumer.Received += (_, ea) => { HandleMessageReceived(ea, stoppingToken); };
                 
                 _consumerTag = _channel.BasicConsume(queue: _options.QueueName, autoAck: _options.AutoAck,
                     consumer: _consumer);
@@ -139,20 +138,18 @@ namespace NanoRabbit.Service
         {
             var messageBody = ea.Body.ToArray();
             var deliveryTag = ea.DeliveryTag;
-            var correlationId = ea.BasicProperties?.CorrelationId; // 尝试获取 CorrelationId
+            var correlationId = ea.BasicProperties?.CorrelationId;
             bool processedSuccessfully = false;
 
             _logger.LogDebug(
                 "RabbitMQ Consumer [{InstanceId}] Received DeliveryTag={DeliveryTag}, CorrelationId='{CorrelationId}'",
                 _instanceId, deliveryTag, correlationId);
 
-            // **为每个消息处理创建一个新的依赖注入作用域**
-            // 这对于使用 Scoped 服务（如 DbContext）至关重要
+            // Create a new Dependency Injection Scope for each message process
+            // This is essential for working with Scoped services
             using (var scope = _serviceProvider.CreateScope())
             {
-                var messageHandler = scope.ServiceProvider.GetRequiredKeyedService<IMessageHandler>(_options.HandlerName); // 解析消息处理器
-                // 或者解析特定类型的处理器
-                // var specificHandler = scope.ServiceProvider.GetService<IOrderMessageHandler>();
+                var messageHandler = scope.ServiceProvider.GetRequiredKeyedService<IMessageHandler>(_options.HandlerName);
 
                 if (messageHandler == null)
                 {
@@ -225,7 +222,7 @@ namespace NanoRabbit.Service
                 {
                     if (!string.IsNullOrEmpty(_consumerTag))
                     {
-                        _channel.BasicCancel(_consumerTag); // 停止消费
+                        _channel.BasicCancel(_consumerTag); // Stop consuming
                     }
 
                     _channel.Close();

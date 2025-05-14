@@ -6,7 +6,7 @@ using NanoRabbit.Helper;
 namespace NanoRabbit.DependencyInjection;
 
 /// <summary>
-/// RabbitHelper extensions.
+/// RabbitHelper extensions
 /// </summary>
 public static class RabbitHelperExtensions
 {
